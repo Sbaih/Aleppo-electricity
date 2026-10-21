@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الشركة العامة لكهرباء محافظة حلب - نظام إدارة المخارج والبوسطات</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        electric: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            400: '#38bdf8',
+                            500: '#0284c7',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                            950: '#082f49',
+                        },
+                        voltage: {
+                            yellow: '#facc15',
+                            amber: '#f59e0b',
+                            red: '#ef4444',
+                            green: '#10b981'
+                        }
+                    },
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+        /* Electric Grid Graphic Lines */
+        .bg-grid-pattern {
+            background-image: radial-gradient(rgba(56, 189, 248, 0.12) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+
+        /* Neon Glow Effects */
+        .electric-glow {
+            box-shadow: 0 0 15px rgba(250, 204, 21, 0.25);
+        }
+        .electric-glow-blue {
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0284c7;
+        }
+
+        /* Print Style rules */
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; color: black !important; }
+            .print-area { background: white !important; color: black !important; border: 1px solid #ccc !important; }
+            .print-card { page-break-inside: avoid; border: 1px solid #e2e8f0 !important; color: black !important; }
+            .text-white, .text-slate-200, .text-slate-300, .text-slate-400 { color: #1e293b !important; }
+            .bg-slate-900, .bg-slate-800, .bg-slate-950 { background-color: #ffffff !important; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-grid-pattern selection:bg-amber-400 selection:text-slate-950">
+
+    <!-- Header / Navbar -->
+    <header class="bg-slate-950/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                
+                <!-- Logo & Title -->
+                <div class="flex items-center gap-3">
+                    <div class="relative w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-600 via-indigo-600 to-amber-400 p-0.5 shadow-lg electric-glow">
+                        <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center text-amber-400">
+                            <i class="fa-solid fa-bolt-lightning text-2xl animate-pulse"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h1 class="font-black text-lg sm:text-xl text-white tracking-wide">الشركة العامة لكهرباء محافظة حلب</h1>
+                            <span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[10px] font-extrabold px-2 py-0.5 rounded-full hidden sm:inline-block">نظام المراقبة والمخارج</span>
+                        </div>
+                        <p class="text-xs text-sky-400/80 font-medium">نظام إدارة وتتبع المخارج الكهربائية ومراكز التحويل (البوسطات)</p>
+                    </div>
+                </div>
+
+                <!-- Top Quick Actions -->
+                <div class="flex items-center gap-2">
+                    <button onclick="openFeederModal()" class="bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm shadow-lg hover:shadow-sky-500/20 transition-all flex items-center gap-2 border border-sky-400/30">
+                        <i class="fa-solid fa-plus text-amber-400"></i>
+                        <span class="hidden sm:inline">إضافة مخرج جديد</span>
+                        <span class="sm:hidden">مخرج جديد</span>
+                    </button>
+                    
+                    <button onclick="exportJSONBackup()" title="نسخة احتياطية" class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2.5 rounded-xl border border-slate-700 text-xs font-semibold transition-all">
+                        <i class="fa-solid fa-database"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-8">
+
+        <!-- Notification Toast -->
+        <div id="toast" class="fixed bottom-6 left-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 bg-slate-900/95 text-white border border-sky-500/40 px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-md pointer-events-none">
+            <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-xl"></i>
+            <span id="toastMessage" class="text-sm font-semibold">تمت العملية بنجاح!</span>
+        </div>
+
+        <!-- Dashboard Stats Cards -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 no-print">
+            
+            <!-- Total Feeders -->
+            <div class="bg-slate-900/80 backdrop-blur-md p-5 rounded-2xl border border-slate-800 hover:border-sky-500/50 transition-all shadow-md group">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">إجمالي المخارج</span>
+                    <div class="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-plug-circle-bolt"></i>
+                    </div>
+                </div>
+                <div class="flex items-baseline justify-between">
+                    <h3 id="statTotalFeeders" class="text-3xl font-black text-white">0</h3>
+                    <span class="text-xs text-slate-400 font-medium">مخرج تغذية</span>
+                </div>
+            </div>
+
+            <!-- Total Substations -->
+            <div class="bg-slate-900/80 backdrop-blur-md p-5 rounded-2xl border border-slate-800 hover:border-amber-500/50 transition-all shadow-md group">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">مراكز التحويل (البوسطات)</span>
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-charging-station"></i>
+                    </div>
+                </div>
+                <div class="flex items-baseline justify-between">
+                    <h3 id="statTotalSubstations" class="text-3xl font-black text-white">0</h3>
+                    <span class="text-xs text-slate-400 font-medium">بوسطة كهربائية</span>
+                </div>
+            </div>
+
+            <!-- Total Installed Power -->
+            <div class="bg-slate-900/80 backdrop-blur-md p-5 rounded-2xl border border-slate-800 hover:border-indigo-500/50 transition-all shadow-md group">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">الاستطاعة الإجمالية المركبة</span>
+                    <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-gauge-high"></i>
+                    </div>
+                </div>
+                <div class="flex items-baseline justify-between">
+                    <h3 id="statTotalPower" class="text-3xl font-black text-white">0</h3>
+                    <span class="text-xs text-indigo-400 font-extrabold" id="statPowerUnit">kVA</span>
+                </div>
+            </div>
+
+            <!-- Status Alerts -->
+            <div class="bg-slate-900/80 backdrop-blur-md p-5 rounded-2xl border border-slate-800 hover:border-rose-500/50 transition-all shadow-md group">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">المخارج خارج الخدمة / صيانة</span>
+                    <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                </div>
+                <div class="flex items-baseline justify-between">
+                    <h3 id="statOffFeeders" class="text-3xl font-black text-rose-400">0</h3>
+                    <span class="text-xs text-slate-400 font-medium">حالة متوقفة</span>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Search, Filter & View Controls -->
+        <section class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4 no-print">
+            <div class="flex flex-col lg:flex-row gap-4 justify-between items-center">
+                
+                <!-- Search Inputs -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full lg:w-auto flex-grow">
+                    
+                    <!-- Search Input -->
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+                        <input type="text" id="searchInput" oninput="applyFilters()" placeholder="البحث برقم المخرج، اسم البوسطة، أو الحي..." class="w-full pr-10 pl-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500 transition-all">
+                    </div>
+
+                    <!-- Region Filter -->
+                    <div class="relative">
+                        <i class="fa-solid fa-location-dot absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+                        <select id="regionFilter" onchange="applyFilters()" class="w-full pr-10 pl-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-sky-500 transition-all appearance-none">
+                            <option value="">جميع أحياء حلب</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs pointer-events-none"></i>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div class="relative">
+                        <i class="fa-solid fa-power-off absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+                        <select id="statusFilter" onchange="applyFilters()" class="w-full pr-10 pl-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-sky-500 transition-all appearance-none">
+                            <option value="">جميع الحالات التشغيلية</option>
+                            <option value="عمل">يعمل (خدمة ممتازة)</option>
+                            <option value="صيانة">تحت الصيانة</option>
+                            <option value="مفصول">مفصول / متوقف</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <!-- View Modes Switcher & Export -->
+                <div class="flex items-center gap-2 w-full lg:w-auto justify-between lg:justify-end pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-800">
+                    
+                    <!-- View Mode Buttons -->
+                    <div class="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-1">
+                        <button id="btnViewGrid" onclick="setViewMode('grid')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 bg-sky-600 text-white">
+                            <i class="fa-solid fa-border-all"></i>
+                            <span class="hidden sm:inline">بطاقات</span>
+                        </button>
+                        <button id="btnViewTree" onclick="setViewMode('tree')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all flex items-center gap-1.5">
+                            <i class="fa-solid fa-sitemap"></i>
+                            <span class="hidden sm:inline">شجري</span>
+                        </button>
+                        <button id="btnViewTable" onclick="setViewMode('table')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all flex items-center gap-1.5">
+                            <i class="fa-solid fa-table"></i>
+                            <span class="hidden sm:inline">جدول</span>
+                        </button>
+                    </div>
+
+                    <!-- Export Actions -->
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="exportToCSV()" title="تصدير Excel" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-excel"></i>
+                            <span class="hidden sm:inline">CSV</span>
+                        </button>
+                        <button onclick="window.print()" title="طباعة تقرير" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5">
+                            <i class="fa-solid fa-print"></i>
+                            <span class="hidden sm:inline">طباعة</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Dynamic Data Render Display Views -->
+        <section id="displayContainer" class="w-full">
+            <!-- Content dynamically rendered via JavaScript based on View Mode -->
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 border-t border-slate-800 py-6 text-center text-xs text-slate-500 no-print mt-12">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p>الشركة العامة لكهرباء محافظة حلب - قسم المتابعة والتشغيل &copy; 2026</p>
+            <div class="flex items-center gap-4 text-slate-400">
+                <span class="flex items-center gap-1"><i class="fa-solid fa-bolt text-amber-400"></i> جهد متوسط 20kV</span>
+                <span class="flex items-center gap-1"><i class="fa-solid fa-network-wired text-sky-400"></i> شبكة التوزيع</span>
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- ADD / EDIT FEEDER & SUBSTATIONS MODAL -->
+    <div id="feederModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200 no-print">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden transform scale-95 transition-transform duration-200 flex flex-col max-h-[92vh]">
+            
+            <!-- Modal Header -->
+            <div class="px-6 py-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400">
+                        <i id="feederModalIcon" class="fa-solid fa-bolt text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 id="feederModalTitle" class="font-bold text-base text-white">إضافة مخرج جديد</h3>
+                        <p class="text-xs text-slate-400">أدخل بيانات المخرج الكهربائي ومراكز التحويل التابعة له</p>
+                    </div>
+                </div>
+                <button onclick="closeFeederModal()" class="text-slate-400 hover:text-white transition-colors w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-800">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Modal Form Body -->
+            <form id="feederForm" onsubmit="handleFeederSubmit(event)" class="p-6 overflow-y-auto space-y-6 flex-grow">
+                <input type="hidden" id="editFeederId" value="">
+
+                <!-- Feeder Main Info Grid -->
+                <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800/80 space-y-4">
+                    <h4 class="text-xs font-black text-sky-400 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-tower-cell"></i>
+                        <span>بيانات المخرج الرئيسي</span>
+                    </h4>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1.5">اسم المخرج <span class="text-rose-400">*</span></label>
+                            <input type="text" id="feederName" required placeholder="مثال: مخرج الجميلية 1" class="w-full px-3.5 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1.5">رمز / رقم المخرج <span class="text-rose-400">*</span></label>
+                            <input type="text" id="feederCode" required placeholder="مثال: FDF-201" class="w-full px-3.5 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs font-mono text-amber-400 focus:outline-none focus:border-sky-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1.5">المنطقة / الحي بحلب <span class="text-rose-400">*</span></label>
+                            <input type="text" id="feederRegion" required placeholder="مثال: الجميلية، الشهباء..." class="w-full px-3.5 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1.5">الجهد الاسمي <span class="text-rose-400">*</span></label>
+                            <select id="feederVoltage" required class="w-full px-3.5 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
+                                <option value="20 kV">20 kV (جهد متوسط)</option>
+                                <option value="6.6 kV">6.6 kV</option>
+                                <option value="0.4 kV">0.4 kV (منخفض)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1.5">المحطة الرئيسية المغذية</label>
+                            <input type="text" id="feederMainStation" placeholder="مثال: محطة تحويل الجميلية 66/20kV" class="w-full px-3.5 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1.5">حالة تشغيل المخرج</label>
+                            <select id="feederStatus" class="w-full px-3.5 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
+                                <option value="عمل">عمل (شغّال)</option>
+                                <option value="صيانة">تحت الصيانة</option>
+                                <option value="مفصول">مفصول / متوقف</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Substations Section -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-charging-station"></i>
+                                <span>مراكز التحويل (البوسطات) التابعة للمخرج</span>
+                            </h4>
+                            <p class="text-[11px] text-slate-400">أضف مراكز التحويل المغذاة من هذا المخرج بالتفصيل</p>
+                        </div>
+                        <button type="button" onclick="addSubstationRow()" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>إضافة بوسطة</span>
+                        </button>
+                    </div>
+
+                    <!-- Container for substations -->
+                    <div id="substationsContainer" class="space-y-3">
+                        <!-- Dynamic Substation Rows Here -->
+                    </div>
+                </div>
+
+            </form>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-4 bg-slate-950 border-t border-slate-800 flex items-center justify-end gap-3">
+                <button type="button" onclick="closeFeederModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition-all">
+                    إلغاء
+                </button>
+                <button type="submit" form="feederForm" class="px-5 py-2 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold shadow-lg transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    <span>حفظ البيانات</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- DETAILS VIEW MODAL / PRINTABLE CARD -->
+    <div id="viewModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden transform scale-95 transition-transform duration-200 flex flex-col max-h-[90vh]">
+            
+            <div class="px-6 py-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between no-print">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-bolt text-amber-400 text-xl"></i>
+                    <h3 class="font-bold text-base text-white">بطاقة المخرج والمراكز التابعة</h3>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="printFeederCard()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5">
+                        <i class="fa-solid fa-print"></i>
+                        <span>طباعة البطاقة</span>
+                    </button>
+                    <button onclick="closeViewModal()" class="text-slate-400 hover:text-white transition-colors w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-800">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-6 overflow-y-auto space-y-6 print-area" id="viewModalContent">
+                <!-- Content dynamically populated via JS -->
+            </div>
+
+            <div class="px-6 py-3.5 bg-slate-950 border-t border-slate-800 flex justify-end no-print">
+                <button onclick="closeViewModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition-all">
+                    إغلاق
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Storage Key
+        const STORAGE_KEY = 'aleppo_electricity_feeders_data_v1';
+
+        // State variables
+        let feeders = [];
+        let currentViewMode = 'grid'; // 'grid', 'tree', 'table'
+
+        // Default Aleppo Demo Data
+        const defaultAleppoData = [
+            {
+                id: 'fd_101',
+                name: 'مخرج الجميلية 1',
+                code: 'FDR-JM-01',
+                region: 'الجميلية',
+                voltage: '20 kV',
+                mainStation: 'محطة تحويل الجميلية الرئيسية 66/20kV',
+                status: 'عمل',
+                substations: [
+                    { name: 'بوسطة جامع الصديق', code: 'SUB-JM-11', power: '630', type: 'كبين', location: 'شارع الجميلية الرئيسي - قرب جامع الصديق', status: 'عمل', notes: 'حالة ممتازة - محول زيت' },
+                    { name: 'بوسطة مشفى اليازجي', code: 'SUB-JM-12', power: '1000', type: 'أرضي', location: 'خلف مشفى اليازجي', status: 'عمل', notes: 'تغذية مشفى مركزية' },
+                    { name: 'بوسطة سينما أوجاريت', code: 'SUB-JM-13', power: '400', type: 'كبين', location: 'تفرع شارع القوتلي', status: 'عمل', notes: 'حمل متوسط' }
+                ]
+            },
+            {
+                id: 'fd_102',
+                name: 'مخرج الشهباء الجديد',
+                code: 'FDR-SH-02',
+                region: 'الشهباء',
+                voltage: '20 kV',
+                mainStation: 'محطة تحويل الشهباء 66/20kV',
+                status: 'عمل',
+                substations: [
+                    { name: 'بوسطة دوار الموت', code: 'SUB-SH-01', power: '1000', type: 'أرضي', location: 'مقابل دوار الشهباء', status: 'عمل', notes: 'استطاعة عالية' },
+                    { name: 'بوسطة منتزه الشهباء', code: 'SUB-SH-02', power: '630', type: 'كبين', location: 'شارع المنتزه', status: 'عمل', notes: 'شبكة أرضية' }
+                ]
+            },
+            {
+                id: 'fd_103',
+                name: 'مخرج الحمدانية - الحي الرابع',
+                code: 'FDR-HD-04',
+                region: 'الحمدانية',
+                voltage: '20 kV',
+                mainStation: 'محطة الحمدانية الرئيسية',
+                status: 'صيانة',
+                substations: [
+                    { name: 'بوسطة المدرسة الثانوية', code: 'SUB-HD-41', power: '630', type: 'كبين', location: 'الحمدانية - الحي الرابع', status: 'صيانة', notes: 'استبدال قاطع جهد متوسط' },
+                    { name: 'بوسطة السوق التجاري', code: 'SUB-HD-42', power: '1000', type: 'أرضي', location: 'محيط السوق المركزي', status: 'عمل', notes: 'تغذية جزئية' }
+                ]
+            },
+            {
+                id: 'fd_104',
+                name: 'مخرج السريان الجديد',
+                code: 'FDR-SY-01',
+                region: 'السريان',
+                voltage: '20 kV',
+                mainStation: 'محطة الجميلية 66/20kV',
+                status: 'عمل',
+                substations: [
+                    { name: 'بوسطة كنيسة السريان', code: 'SUB-SY-10', power: '630', type: 'كبين', location: 'شارع الكنيسة', status: 'عمل', notes: 'جاهزية كاملة' }
+                ]
+            }
+        ];
+
+        // Init on window load
+        window.onload = function() {
+            loadData();
+            populateRegionFilter();
+            updateStats();
+            renderView();
+        };
+
+        // Load data from LocalStorage
+        function loadData() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                try {
+                    feeders = JSON.parse(stored);
+                } catch(e) {
+                    feeders = defaultAleppoData;
+                }
+            } else {
+                feeders = defaultAleppoData;
+                saveData();
+            }
+        }
+
+        // Save data to LocalStorage
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(feeders));
+            updateStats();
+            populateRegionFilter();
+        }
+
+        // Update Statistics Panel
+        function updateStats() {
+            let totalFeeders = feeders.length;
+            let totalSubstations = 0;
+            let totalPowerKVA = 0;
+            let offFeeders = 0;
+
+            feeders.forEach(f => {
+                if (f.status === 'صيانة' || f.status === 'مفصول') offFeeders++;
+                if (f.substations) {
+                    totalSubstations += f.substations.length;
+                    f.substations.forEach(s => {
+                        totalPowerKVA += parseFloat(s.power || 0);
+                    });
+                }
+            });
+
+            document.getElementById('statTotalFeeders').innerText = totalFeeders;
+            document.getElementById('statTotalSubstations').innerText = totalSubstations;
+            document.getElementById('statOffFeeders').innerText = offFeeders;
+
+            // Format Power
+            if (totalPowerKVA >= 1000) {
+                document.getElementById('statTotalPower').innerText = (totalPowerKVA / 1000).toFixed(2);
+                document.getElementById('statPowerUnit').innerText = 'MVA';
+            } else {
+                document.getElementById('statTotalPower').innerText = totalPowerKVA;
+                document.getElementById('statPowerUnit').innerText = 'kVA';
+            }
+        }
+
+        // Populate region dynamic dropdown
+        function populateRegionFilter() {
+            const select = document.getElementById('regionFilter');
+            const currentVal = select.value;
+            const regions = new Set();
+
+            feeders.forEach(f => {
+                if (f.region) regions.add(f.region.trim());
+            });
+
+            select.innerHTML = '<option value="">جميع أحياء حلب</option>';
+            Array.from(regions).sort().forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r;
+                opt.textContent = r;
+                select.appendChild(opt);
+            });
+
+            select.value = currentVal;
+        }
+
+        // Switch View Modes
+        function setViewMode(mode) {
+            currentViewMode = mode;
+            
+            // Buttons highlight
+            const btnGrid = document.getElementById('btnViewGrid');
+            const btnTree = document.getElementById('btnViewTree');
+            const btnTable = document.getElementById('btnViewTable');
+
+            [btnGrid, btnTree, btnTable].forEach(btn => {
+                btn.className = "px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all flex items-center gap-1.5";
+            });
+
+            if (mode === 'grid') btnGrid.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 bg-sky-600 text-white";
+            if (mode === 'tree') btnTree.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 bg-sky-600 text-white";
+            if (mode === 'table') btnTable.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 bg-sky-600 text-white";
+
+            renderView();
+        }
+
+        // Filter Logic
+        function getFilteredFeeders() {
+            const searchVal = document.getElementById('searchInput').value.trim().toLowerCase();
+            const regionVal = document.getElementById('regionFilter').value;
+            const statusVal = document.getElementById('statusFilter').value;
+
+            return feeders.filter(f => {
+                const matchRegion = !regionVal || f.region === regionVal;
+                const matchStatus = !statusVal || f.status === statusVal;
+
+                // Match Search in feeder name, code, region or substations
+                let matchSearch = f.name.toLowerCase().includes(searchVal) || 
+                                  f.code.toLowerCase().includes(searchVal) ||
+                                  f.region.toLowerCase().includes(searchVal);
+
+                if (!matchSearch && f.substations) {
+                    matchSearch = f.substations.some(s => 
+                        s.name.toLowerCase().includes(searchVal) || 
+                        s.code.toLowerCase().includes(searchVal) ||
+                        s.location.toLowerCase().includes(searchVal)
+                    );
+                }
+
+                return matchRegion && matchStatus && matchSearch;
+            });
+        }
+
+        function applyFilters() {
+            renderView();
+        }
+
+        // Render current view mode
+        function renderView() {
+            const container = document.getElementById('displayContainer');
+            const filtered = getFilteredFeeders();
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center flex flex-col items-center justify-center">
+                        <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-slate-500 text-2xl mb-4">
+                            <i class="fa-solid fa-folder-open"></i>
+                        </div>
+                        <h3 class="text-white font-bold text-base mb-1">لا توجد مخارج طابق خيارات البحث</h3>
+                        <p class="text-xs text-slate-400">تأكد من اسم الحي أو كود المخرج المكتوب في خانة البحث.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            if (currentViewMode === 'grid') renderGridView(filtered, container);
+            else if (currentViewMode === 'tree') renderTreeView(filtered, container);
+            else if (currentViewMode === 'table') renderTableView(filtered, container);
+        }
+
+        // 1. Grid View Rendering
+        function renderGridView(data, container) {
+            let html = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">`;
+
+            data.forEach(feeder => {
+                let statusBadge = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+                if (feeder.status === 'صيانة') statusBadge = 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+                if (feeder.status === 'مفصول') statusBadge = 'bg-rose-500/10 text-rose-400 border-rose-500/30';
+
+                let totalPower = 0;
+                if (feeder.substations) {
+                    feeder.substations.forEach(s => totalPower += parseFloat(s.power || 0));
+                }
+
+                html += `
+                    <div class="bg-slate-900 border border-slate-800 hover:border-sky-500/40 rounded-2xl p-5 shadow-xl transition-all flex flex-col justify-between group">
+                        
+                        <div>
+                            <!-- Top Badge row -->
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-slate-950 text-amber-400 border border-slate-800">
+                                    ${escapeHtml(feeder.code)}
+                                </span>
+                                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold border ${statusBadge}">
+                                    ${escapeHtml(feeder.status)}
+                                </span>
+                            </div>
+
+                            <!-- Title -->
+                            <h3 class="text-base font-extrabold text-white group-hover:text-sky-400 transition-colors mb-1">
+                                ${escapeHtml(feeder.name)}
+                            </h3>
+
+                            <p class="text-xs text-slate-400 flex items-center gap-1.5 mb-4">
+                                <i class="fa-solid fa-location-dot text-rose-400"></i>
+                                <span>حي ${escapeHtml(feeder.region)}</span>
+                                <span class="text-slate-600">•</span>
+                                <span class="text-sky-400 font-bold">${escapeHtml(feeder.voltage)}</span>
+                            </p>
+
+                            <!-- Substation Count & Power Bar -->
+                            <div class="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800/80 space-y-2 mb-4">
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="text-slate-400">عدد المراكز التابعة:</span>
+                                    <span class="font-bold text-white">${feeder.substations ? feeder.substations.length : 0} بوسطة</span>
+                                </div>
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="text-slate-400">الاستطاعة الكلية:</span>
+                                    <span class="font-mono font-bold text-amber-400">${totalPower} kVA</span>
+                                </div>
+                            </div>
+
+                            <!-- List of substations preview -->
+                            <div class="space-y-1.5 mb-4">
+                                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">مراكز التحويل:</p>
+                                ${feeder.substations && feeder.substations.length > 0 ? feeder.substations.slice(0, 3).map(s => `
+                                    <div class="flex items-center justify-between bg-slate-800/50 px-2.5 py-1.5 rounded-lg text-xs border border-slate-800">
+                                        <span class="text-slate-300 font-medium truncate max-w-[170px]">${escapeHtml(s.name)}</span>
+                                        <span class="font-mono text-[11px] text-amber-400 font-bold">${s.power} kVA</span>
+                                    </div>
+                                `).join('') : '<p class="text-xs text-slate-500 italic">لا توجد مراكز تحويل مضافة</p>'}
+
+                                ${feeder.substations && feeder.substations.length > 3 ? `
+                                    <p class="text-[10px] text-sky-400 font-bold text-left pt-1">+ ${feeder.substations.length - 3} مراكز أخرى...</p>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <!-- Card Actions Footer -->
+                        <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+                            <button onclick="viewFeederDetails('${feeder.id}')" class="text-sky-400 hover:text-sky-300 text-xs font-bold flex items-center gap-1 transition-colors">
+                                <i class="fa-solid fa-eye"></i>
+                                <span>عرض البطاقة الكاملة</span>
+                            </button>
+
+                            <div class="flex items-center gap-1">
+                                <button onclick="editFeeder('${feeder.id}')" title="تعديل المخرج" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-amber-500/20 hover:text-amber-400 text-slate-400 transition-all flex items-center justify-center text-xs">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button onclick="deleteFeeder('${feeder.id}')" title="حذف" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 transition-all flex items-center justify-center text-xs">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        // 2. Tree View Rendering
+        function renderTreeView(data, container) {
+            let html = `<div class="space-y-6">`;
+
+            data.forEach(feeder => {
+                html += `
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                        <!-- Main Feeder Node -->
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-400 flex items-center justify-center text-lg shrink-0">
+                                    <i class="fa-solid fa-network-wired"></i>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h3 class="font-bold text-white text-base">${escapeHtml(feeder.name)}</h3>
+                                        <span class="px-2 py-0.5 rounded bg-slate-800 text-amber-400 text-xs font-mono font-bold">${escapeHtml(feeder.code)}</span>
+                                    </div>
+                                    <p class="text-xs text-slate-400 mt-0.5">
+                                        محطة التغذية: <span class="text-slate-200">${escapeHtml(feeder.mainStation || 'غير حددة')}</span> | 
+                                        المنطقة: <span class="text-sky-400">${escapeHtml(feeder.region)}</span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                                <span class="px-3 py-1 rounded-full text-xs font-bold ${feeder.status === 'عمل' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'} border border-slate-700">
+                                    ${escapeHtml(feeder.status)}
+                                </span>
+                                <button onclick="editFeeder('${feeder.id}')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 rounded-lg font-bold">
+                                    تعديل
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Tree Branches Connector -->
+                        <div class="mr-6 pr-6 border-r-2 border-dashed border-sky-500/30 my-4 space-y-3">
+                            ${feeder.substations && feeder.substations.length > 0 ? feeder.substations.map(s => `
+                                <div class="relative flex flex-col sm:flex-row items-start sm:items-center justify-between bg-slate-950/60 p-3.5 rounded-xl border border-slate-800/80 hover:border-amber-500/30 transition-all gap-2">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center text-xs shrink-0">
+                                            <i class="fa-solid fa-charging-station"></i>
+                                        </div>
+                                        <div>
+                                            <div class="flex items-center gap-2">
+                                                <h4 class="font-bold text-xs text-slate-200">${escapeHtml(s.name)}</h4>
+                                                <span class="text-[10px] font-mono text-slate-400">(${escapeHtml(s.code)})</span>
+                                            </div>
+                                            <p class="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
+                                                <span>الموقع: ${escapeHtml(s.location || 'غير محدد')}</span>
+                                                <span>•</span>
+                                                <span class="text-amber-400 font-bold">${escapeHtml(s.type)}</span>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center gap-3">
+                                        <div class="text-right">
+                                            <span class="block text-xs font-mono font-extrabold text-amber-400">${s.power} kVA</span>
+                                            <span class="block text-[10px] text-slate-500">${s.notes || ''}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('') : '<p class="text-xs text-slate-500 italic p-2">لا يوجد مراكز تحويل فرعية تابعة لهذا المخرج</p>'}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        // 3. Table View Rendering
+        function renderTableView(data, container) {
+            let html = `
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right border-collapse">
+                            <thead>
+                                <tr class="bg-slate-950 text-slate-400 text-xs font-bold border-b border-slate-800">
+                                    <th class="p-4">رمز المخرج</th>
+                                    <th class="p-4">اسم المخرج</th>
+                                    <th class="p-4">المنطقة</th>
+                                    <th class="p-4">الجهد</th>
+                                    <th class="p-4">عدد البوسطات</th>
+                                    <th class="p-4">الاستطاعة الكلية</th>
+                                    <th class="p-4">الحالة</th>
+                                    <th class="p-4 text-center">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60 text-xs">
+            `;
+
+            data.forEach(feeder => {
+                let totalPower = 0;
+                if (feeder.substations) {
+                    feeder.substations.forEach(s => totalPower += parseFloat(s.power || 0));
+                }
+
+                html += `
+                    <tr class="hover:bg-slate-800/40 transition-colors">
+                        <td class="p-4 font-mono font-bold text-amber-400">${escapeHtml(feeder.code)}</td>
+                        <td class="p-4 font-bold text-white">${escapeHtml(feeder.name)}</td>
+                        <td class="p-4 text-slate-300">${escapeHtml(feeder.region)}</td>
+                        <td class="p-4 font-bold text-sky-400">${escapeHtml(feeder.voltage)}</td>
+                        <td class="p-4 font-bold text-slate-200">${feeder.substations ? feeder.substations.length : 0}</td>
+                        <td class="p-4 font-mono font-bold text-amber-400">${totalPower} kVA</td>
+                        <td class="p-4">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${feeder.status === 'عمل' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'}">
+                                ${escapeHtml(feeder.status)}
+                            </span>
+                        </td>
+                        <td class="p-4 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <button onclick="viewFeederDetails('${feeder.id}')" title="عرض" class="w-7 h-7 rounded bg-slate-800 hover:bg-sky-500/20 text-sky-400 flex items-center justify-center">
+                                    <i class="fa-solid fa-eye text-xs"></i>
+                                </button>
+                                <button onclick="editFeeder('${feeder.id}')" title="تعديل" class="w-7 h-7 rounded bg-slate-800 hover:bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                                    <i class="fa-solid fa-pen text-xs"></i>
+                                </button>
+                                <button onclick="deleteFeeder('${feeder.id}')" title="حذف" class="w-7 h-7 rounded bg-slate-800 hover:bg-rose-500/20 text-rose-400 flex items-center justify-center">
+                                    <i class="fa-solid fa-trash text-xs"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        // Dynamic Substation row addition in form
+        function addSubstationRow(name = '', code = '', power = '630', type = 'كبين', location = '', notes = '') {
+            const container = document.getElementById('substationsContainer');
+            const rowId = 'sub_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+
+            const div = document.createElement('div');
+            div.id = rowId;
+            div.className = "p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-3 relative group";
+
+            div.innerHTML = `
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-400 mb-1">اسم البوسطة / المركز <span class="text-rose-400">*</span></label>
+                        <input type="text" value="${escapeHtml(name)}" placeholder="مثال: بوسطة جامع الصديق" required class="sub-name w-full px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-400 mb-1">رمز / رقم المركز</label>
+                        <input type="text" value="${escapeHtml(code)}" placeholder="مثال: SUB-JM-11" class="sub-code w-full px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs font-mono text-amber-400 focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-400 mb-1">الاستطاعة (kVA) <span class="text-rose-400">*</span></label>
+                        <select class="sub-power w-full px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs font-mono text-amber-400 focus:outline-none focus:border-amber-400">
+                            <option value="100" ${power == '100' ? 'selected' : ''}>100 kVA</option>
+                            <option value="250" ${power == '250' ? 'selected' : ''}>250 kVA</option>
+                            <option value="400" ${power == '400' ? 'selected' : ''}>400 kVA</option>
+                            <option value="630" ${power == '630' ? 'selected' : ''}>630 kVA</option>
+                            <option value="1000" ${power == '1000' ? 'selected' : ''}>1000 kVA</option>
+                            <option value="1600" ${power == '1600' ? 'selected' : ''}>1600 kVA</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-400 mb-1">نوع المركز</label>
+                        <select class="sub-type w-full px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white focus:outline-none focus:border-amber-400">
+                            <option value="كبين" ${type === 'كبين' ? 'selected' : ''}>كبين (منفصل)</option>
+                            <option value="أرضي" ${type === 'أرضي' ? 'selected' : ''}>أرضي (ضمن بناء)</option>
+                            <option value="هوائي" ${type === 'هوائي' ? 'selected' : ''}>هوائي (على بريد)</option>
+                        </select>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-[11px] font-bold text-slate-400 mb-1">الموقع / الشارع الدقيق</label>
+                        <input type="text" value="${escapeHtml(location)}" placeholder="مثال: شارع الجميلية - خلف المشافي" class="sub-location w-full px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white focus:outline-none focus:border-amber-400">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 mb-1">ملاحظات فنية</label>
+                    <div class="flex gap-2">
+                        <input type="text" value="${escapeHtml(notes)}" placeholder="حالة القواطع، المحول..." class="sub-notes w-full px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white focus:outline-none focus:border-amber-400">
+                        <button type="button" onclick="removeSubstationRow('${rowId}')" class="px-2.5 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg text-xs font-bold transition-all shrink-0">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(div);
+        }
+
+        function removeSubstationRow(rowId) {
+            const container = document.getElementById('substationsContainer');
+            if (container.children.length <= 1) {
+                showToast('يجب تسجيل بوسطة واحدة على الأقل لكل مخرج', 'error');
+                return;
+            }
+            const el = document.getElementById(rowId);
+            if (el) el.remove();
+        }
+
+        // Open Modal
+        function openFeederModal() {
+            document.getElementById('feederForm').reset();
+            document.getElementById('editFeederId').value = '';
+            document.getElementById('feederModalTitle').innerText = 'إضافة مخرج جديد';
+            document.getElementById('substationsContainer').innerHTML = '';
+            
+            // Add default 1 row
+            addSubstationRow();
+
+            const modal = document.getElementById('feederModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.firstElementChild.classList.remove('scale-95');
+        }
+
+        function closeFeederModal() {
+            const modal = document.getElementById('feederModal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modal.firstElementChild.classList.add('scale-95');
+        }
+
+        // Form Submit Handler
+        function handleFeederSubmit(e) {
+            e.preventDefault();
+
+            const id = document.getElementById('editFeederId').value;
+            const name = document.getElementById('feederName').value.trim();
+            const code = document.getElementById('feederCode').value.trim();
+            const region = document.getElementById('feederRegion').value.trim();
+            const voltage = document.getElementById('feederVoltage').value;
+            const mainStation = document.getElementById('feederMainStation').value.trim();
+            const status = document.getElementById('feederStatus').value;
+
+            // Collect substations
+            const subRows = document.querySelectorAll('#substationsContainer > div');
+            const substations = [];
+
+            subRows.forEach(row => {
+                const subName = row.querySelector('.sub-name').value.trim();
+                const subCode = row.querySelector('.sub-code').value.trim();
+                const subPower = row.querySelector('.sub-power').value;
+                const subType = row.querySelector('.sub-type').value;
+                const subLocation = row.querySelector('.sub-location').value.trim();
+                const subNotes = row.querySelector('.sub-notes').value.trim();
+
+                if (subName) {
+                    substations.push({
+                        name: subName,
+                        code: subCode || 'SUB-' + Math.floor(Math.random() * 900 + 100),
+                        power: subPower,
+                        type: subType,
+                        location: subLocation,
+                        status: 'عمل',
+                        notes: subNotes
+                    });
+                }
+            });
+
+            if (substations.length === 0) {
+                showToast('يرجى تحديد مركز تحويل واحد على الأقل', 'error');
+                return;
+            }
+
+            if (id) {
+                // Update
+                const idx = feeders.findIndex(f => f.id === id);
+                if (idx !== -1) {
+                    feeders[idx] = { id, name, code, region, voltage, mainStation, status, substations };
+                    showToast('تم تعديل بيانات المخرج بنجاح');
+                }
+            } else {
+                // Add new
+                const newFeeder = {
+                    id: 'fd_' + Date.now(),
+                    name, code, region, voltage, mainStation, status, substations
+                };
+                feeders.unshift(newFeeder);
+                showToast('تمت إضافة المخرج الجديد بنجاح');
+            }
+
+            saveData();
+            renderView();
+            closeFeederModal();
+        }
+
+        // Edit Feeder
+        function editFeeder(id) {
+            const feeder = feeders.find(f => f.id === id);
+            if (!feeder) return;
+
+            document.getElementById('editFeederId').value = feeder.id;
+            document.getElementById('feederName').value = feeder.name;
+            document.getElementById('feederCode').value = feeder.code;
+            document.getElementById('feederRegion').value = feeder.region;
+            document.getElementById('feederVoltage').value = feeder.voltage;
+            document.getElementById('feederMainStation').value = feeder.mainStation || '';
+            document.getElementById('feederStatus').value = feeder.status;
+
+            document.getElementById('feederModalTitle').innerText = 'تعديل بيانات المخرج';
+
+            const container = document.getElementById('substationsContainer');
+            container.innerHTML = '';
+
+            if (feeder.substations && feeder.substations.length > 0) {
+                feeder.substations.forEach(s => {
+                    addSubstationRow(s.name, s.code, s.power, s.type, s.location, s.notes);
+                });
+            } else {
+                addSubstationRow();
+            }
+
+            const modal = document.getElementById('feederModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.firstElementChild.classList.remove('scale-95');
+        }
+
+        // View Details Modal / Printable Card
+        function viewFeederDetails(id) {
+            const feeder = feeders.find(f => f.id === id);
+            if (!feeder) return;
+
+            let totalPower = 0;
+            if (feeder.substations) {
+                feeder.substations.forEach(s => totalPower += parseFloat(s.power || 0));
+            }
+
+            const content = document.getElementById('viewModalContent');
+            content.innerHTML = `
+                <!-- Official Header on Print -->
+                <div class="border-b-2 border-slate-800 pb-4 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-lg font-black text-white">الشركة العامة لكهرباء محافظة حلب</h2>
+                        <p class="text-xs text-sky-400">بطاقة فنية تفصيلية للمخرج ومراكز التحويل</p>
+                    </div>
+                    <div class="text-left font-mono text-xs text-slate-400">
+                        <p>التاريخ: ${new Date().toLocaleDateString('ar-SY')}</p>
+                        <p class="text-amber-400 font-bold">${escapeHtml(feeder.code)}</p>
+                    </div>
+                </div>
+
+                <!-- Feeder Summary Table -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                    <div>
+                        <span class="block text-[11px] text-slate-400">اسم المخرج:</span>
+                        <span class="font-bold text-white text-sm">${escapeHtml(feeder.name)}</span>
+                    </div>
+                    <div>
+                        <span class="block text-[11px] text-slate-400">المنطقة / الحي:</span>
+                        <span class="font-bold text-sky-400 text-sm">${escapeHtml(feeder.region)}</span>
+                    </div>
+                    <div>
+                        <span class="block text-[11px] text-slate-400">الجهد الاسمي:</span>
+                        <span class="font-bold text-amber-400 text-sm">${escapeHtml(feeder.voltage)}</span>
+                    </div>
+                    <div>
+                        <span class="block text-[11px] text-slate-400">الاستطاعة الكلية:</span>
+                        <span class="font-mono font-bold text-amber-400 text-sm">${totalPower} kVA</span>
+                    </div>
+                </div>
+
+                <!-- Main Substation Source -->
+                <div class="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800/80 text-xs text-slate-300">
+                    <span class="font-bold text-slate-400">المحطة الرئيسية المغذية:</span>
+                    <span class="text-white mr-1">${escapeHtml(feeder.mainStation || 'غير مدونة')}</span>
+                </div>
+
+                <!-- Substations List -->
+                <div>
+                    <h4 class="font-bold text-sm text-white mb-3 flex items-center justify-between">
+                        <span>قائمة البوسطات ومراكز التحويل التابعة</span>
+                        <span class="text-xs font-mono text-amber-400">العدد: ${feeder.substations ? feeder.substations.length : 0}</span>
+                    </h4>
+
+                    <div class="space-y-2.5">
+                        ${feeder.substations && feeder.substations.length > 0 ? feeder.substations.map((s, idx) => `
+                            <div class="p-3.5 bg-slate-950 rounded-xl border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-bold text-white text-xs">${idx + 1}. ${escapeHtml(s.name)}</span>
+                                        <span class="text-[10px] font-mono text-amber-400">(${escapeHtml(s.code)})</span>
+                                        <span class="px-2 py-0.5 rounded bg-slate-800 text-[10px] text-slate-300">${escapeHtml(s.type)}</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 mt-1">${escapeHtml(s.location || 'لا يوجد موقع مدون')}</p>
+                                    ${s.notes ? `<p class="text-[10px] text-slate-500 mt-0.5">ملاحظات: ${escapeHtml(s.notes)}</p>` : ''}
+                                </div>
+                                <div class="text-right shrink-0">
+                                    <span class="font-mono font-extrabold text-amber-400 text-sm">${s.power} kVA</span>
+                                </div>
+                            </div>
+                        `).join('') : '<p class="text-xs text-slate-500 italic">لا توجد مراكز تحويل مضافة لهذا المخرج.</p>'}
+                    </div>
+                </div>
+            `;
+
+            const modal = document.getElementById('viewModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.firstElementChild.classList.remove('scale-95');
+        }
+
+        function closeViewModal() {
+            const modal = document.getElementById('viewModal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modal.firstElementChild.classList.add('scale-95');
+        }
+
+        function printFeederCard() {
+            window.print();
+        }
+
+        // Delete Feeder
+        function deleteFeeder(id) {
+            const feeder = feeders.find(f => f.id === id);
+            if (!feeder) return;
+
+            if (confirm(`هل أنت تأكد من حذف المخرج "${feeder.name}" مع كافة البوسطات التابعة له؟`)) {
+                feeders = feeders.filter(f => f.id !== id);
+                saveData();
+                renderView();
+                showToast('تم حذف المخرج بنجاح');
+            }
+        }
+
+        // Export CSV (Excel)
+        function exportToCSV() {
+            if (feeders.length === 0) {
+                showToast('لا توجد بيانات لتصديرها', 'error');
+                return;
+            }
+
+            let csv = "\uFEFF"; // UTF-8 BOM
+            csv += "رمز المخرج,اسم المخرج,المنطقة / الحي,الجهد,المحطة الرئيسية,حالة التشغيل,اسم البوسطة,رمز البوسطة,الاستطاعة kVA,نوع المركز,موقع البوسطة\n";
+
+            feeders.forEach(f => {
+                if (f.substations && f.substations.length > 0) {
+                    f.substations.forEach(s => {
+                        csv += `"${f.code}","${f.name}","${f.region}","${f.voltage}","${f.mainStation || ''}","${f.status}","${s.name}","${s.code}","${s.power}","${s.type}","${s.location || ''}"\n`;
+                    });
+                } else {
+                    csv += `"${f.code}","${f.name}","${f.region}","${f.voltage}","${f.mainStation || ''}","${f.status}","--","--","0","--","--"\n`;
+                }
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `كهرباء_حلب_المخارج_والبوسطات_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            showToast('تم تصدير ملف CSV بنجاح');
+        }
+
+        // Export Backup JSON
+        function exportJSONBackup() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(feeders, null, 2));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", `نسخة_احتياطية_مخارج_حلب_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(dlAnchorElem);
+            dlAnchorElem.click();
+            dlAnchorElem.remove();
+
+            showToast('تم تصدير النسخة الاحتياطية JSON');
+        }
+
+        // Notification Toast
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.innerText = msg;
+
+            if (type === 'error') {
+                toastIcon.className = 'fa-solid fa-circle-exclamation text-rose-400 text-xl';
+            } else {
+                toastIcon.className = 'fa-solid fa-circle-check text-emerald-400 text-xl';
+            }
+
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 3200);
+        }
+
+        // Prevent HTML Injection
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
